@@ -24,8 +24,10 @@
   #L%
   -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core"
+         xmlns:f="/lib/form">
     <f:entry>
-        <f:repeatableProperty field="notifications" minimum="1" header="${%Notification configuration}" add="${%Add another notification}" />
+        <f:repeatableProperty field="notifications" minimum="1" header="${%Notification configuration}"
+                              add="${%Add another notification}"/>
     </f:entry>
 </j:jelly>

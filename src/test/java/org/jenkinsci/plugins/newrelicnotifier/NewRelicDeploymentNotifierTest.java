@@ -53,13 +53,11 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class NewRelicDeploymentNotifierTest {
 
+    @Rule
+    public JenkinsRule jenkinsRule = new JenkinsRule();
     protected String username = RandomStringUtils.randomAlphabetic(10);
     protected String password = RandomStringUtils.randomAlphabetic(10);
     protected String credentialsId = RandomStringUtils.randomAlphabetic(4);
-
-    @Rule
-    public JenkinsRule jenkinsRule = new JenkinsRule();
-
     private NewRelicClientStub client;
 
     @Before

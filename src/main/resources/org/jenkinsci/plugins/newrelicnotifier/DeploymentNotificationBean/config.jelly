@@ -25,28 +25,28 @@
   -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:c="/lib/credentials">
-    <st:adjunct includes="lib.credentials.select.select" />
+    <st:adjunct includes="lib.credentials.select.select"/>
     <f:entry title="${%API Key}" field="apiKey">
-        <c:select />
+        <c:select/>
     </f:entry>
     <f:entry title="${%Application}" field="applicationId">
-        <f:select />
+        <f:select/>
     </f:entry>
     <f:entry title="${%Description}" field="description">
-        <f:expandableTextbox />
+        <f:expandableTextbox/>
     </f:entry>
     <f:entry title="${%Revision}" field="revision">
-        <f:textbox />
+        <f:textbox/>
     </f:entry>
     <f:entry title="${%Changelog}" field="changelog">
-        <f:expandableTextbox />
+        <f:expandableTextbox/>
     </f:entry>
     <f:entry title="${%User}" field="user">
-        <f:textbox />
+        <f:textbox/>
     </f:entry>
     <f:entry title="">
         <div align="right">
-            <f:repeatableDeleteButton />
+            <f:repeatableDeleteButton/>
         </div>
     </f:entry>
 </j:jelly>

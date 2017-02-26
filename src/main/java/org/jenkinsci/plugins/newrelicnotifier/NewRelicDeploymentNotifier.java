@@ -68,7 +68,7 @@ public class NewRelicDeploymentNotifier extends Notifier {
         boolean result = true;
 
         if (build.getResult() == Result.FAILURE ||
-            build.getResult() == Result.ABORTED) {
+                build.getResult() == Result.ABORTED) {
             listener.error("Build unsuccessful. Skipping New Relic Deployment notification.");
             return false;
         }
@@ -90,11 +90,11 @@ public class NewRelicDeploymentNotifier extends Notifier {
                 result = false;
             } else {
                 if (client.sendNotification(Secret.toString(credentials.getPassword()),
-                                            n.getApplicationId(),
-                                            n.getDescription(envVars),
-                                            n.getRevision(envVars),
-                                            n.getChangelog(envVars),
-                                            n.getUser(envVars))) {
+                        n.getApplicationId(),
+                        n.getDescription(envVars),
+                        n.getRevision(envVars),
+                        n.getChangelog(envVars),
+                        n.getUser(envVars))) {
                     listener.getLogger().println("Notified New Relic. Application ID: " + n.getApplicationId());
                 } else {
                     listener.error("Failed to notify New Relic. Application ID: %s", n.getApplicationId());

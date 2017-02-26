@@ -25,5 +25,8 @@
   -->
 <?jelly escape-by-default='true'?>
 <div>
-  <a href="https://docs.newrelic.com/docs/apm/applications-menu/events/deployments-dashboard" target="_blank">New Relic</a> Deployment Notifier Plugin.
+    <a href="https://docs.newrelic.com/docs/apm/applications-menu/events/deployments-dashboard" target="_blank">New
+        Relic
+    </a>
+    Deployment Notifier Plugin.
 </div>

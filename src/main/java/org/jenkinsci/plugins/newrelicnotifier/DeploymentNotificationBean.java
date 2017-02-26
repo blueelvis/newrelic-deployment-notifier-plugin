@@ -76,6 +76,18 @@ public class DeploymentNotificationBean extends AbstractDescribableImpl<Deployme
         this.user = user;
     }
 
+    @CheckForNull
+    public static StandardUsernamePasswordCredentials getCredentials(Job<?, ?> owner, String credentialId, String source) {
+        List<StandardUsernamePasswordCredentials> credentials = availableCredentials(owner, source);
+        CredentialsMatcher matcher = CredentialsMatchers.withId(credentialId);
+        return CredentialsMatchers.firstOrNull(credentials, matcher);
+    }
+
+    private static List<StandardUsernamePasswordCredentials> availableCredentials(Job<?, ?> owner, String source) {
+        return CredentialsProvider.lookupCredentials(StandardUsernamePasswordCredentials.class,
+                owner, null, URIRequirementBuilder.fromUri(source).build());
+    }
+
     public String getApiKey() {
         return apiKey;
     }
@@ -116,22 +128,10 @@ public class DeploymentNotificationBean extends AbstractDescribableImpl<Deployme
         return env.expand(getUser());
     }
 
-    @CheckForNull
-    public static StandardUsernamePasswordCredentials getCredentials(Job<?,?> owner, String credentialId, String source) {
-        List<StandardUsernamePasswordCredentials> credentials = availableCredentials(owner, source);
-        CredentialsMatcher matcher = CredentialsMatchers.withId(credentialId);
-        return CredentialsMatchers.firstOrNull(credentials, matcher);
-    }
-
-    private static List<StandardUsernamePasswordCredentials> availableCredentials(Job<?,?> owner, String source) {
-        return CredentialsProvider.lookupCredentials(StandardUsernamePasswordCredentials.class,
-                owner, null, URIRequirementBuilder.fromUri(source).build());
-    }
-
     @Extension
     public static final class DescriptorImpl extends Descriptor<DeploymentNotificationBean> {
 
-        public ListBoxModel doFillApiKeyItems(@AncestorInPath Job<?,?> owner) {
+        public ListBoxModel doFillApiKeyItems(@AncestorInPath Job<?, ?> owner) {
             if (owner == null || !owner.hasPermission(Item.CONFIGURE)) {
                 return new ListBoxModel();
             }
@@ -145,7 +145,7 @@ public class DeploymentNotificationBean extends AbstractDescribableImpl<Deployme
             return FormValidation.ok();
         }
 
-        public ListBoxModel doFillApplicationIdItems(@AncestorInPath Job<?,?> owner, @QueryParameter("apiKey") final String apiKey) throws IOException {
+        public ListBoxModel doFillApplicationIdItems(@AncestorInPath Job<?, ?> owner, @QueryParameter("apiKey") final String apiKey) throws IOException {
             if (owner == null || !owner.hasPermission(Item.CONFIGURE)) {
                 return new ListBoxModel();
             }

@@ -47,12 +47,12 @@ public interface NewRelicClient {
     /**
      * Submit deployment notification
      *
-     * @param apiKey New Relic API key
+     * @param apiKey        New Relic API key
      * @param applicationId Application to register deployment for
-     * @param description Text annotation for the deployment
-     * @param revision The revision number from your source control system
-     * @param changelog A list of changes for this deployment
-     * @param user The name of the user/process that triggered this deployment
+     * @param description   Text annotation for the deployment
+     * @param revision      The revision number from your source control system
+     * @param changelog     A list of changes for this deployment
+     * @param user          The name of the user/process that triggered this deployment
      * @return Returns true if notifications was successful
      * @throws IOException
      * @see <a href="https://docs.newrelic.com/docs/apm/apis/requirements/api-key">https://docs.newrelic.com/docs/apm/apis/requirements/api-key</a>
