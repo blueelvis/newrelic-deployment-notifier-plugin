@@ -27,29 +27,26 @@ package org.jenkinsci.plugins.newrelicnotifier;
  */
 
 import com.cloudbees.plugins.credentials.common.UsernamePasswordCredentials;
-import hudson.EnvVars;
-import hudson.Extension;
-import hudson.Launcher;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
-import hudson.model.Result;
+import hudson.*;
+import hudson.model.*;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import hudson.util.Secret;
+import jenkins.tasks.SimpleBuildStep;
 import org.jenkinsci.plugins.newrelicnotifier.api.NewRelicClient;
 import org.jenkinsci.plugins.newrelicnotifier.api.NewRelicClientImpl;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.List;
 
 /**
  * Notifies a New Relic instance about deployment.
  */
-public class NewRelicDeploymentNotifier extends Notifier {
+public class NewRelicDeploymentNotifier extends Notifier implements SimpleBuildStep {
 
     private final List<DeploymentNotificationBean> notifications;
 
@@ -64,27 +61,29 @@ public class NewRelicDeploymentNotifier extends Notifier {
     }
 
     @Override
-    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+    public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher,
+                        @Nonnull TaskListener listener) throws InterruptedException, IOException {
         boolean result = true;
 
-        if (build.getResult() == Result.FAILURE ||
-                build.getResult() == Result.ABORTED) {
+        if (run.getResult() == Result.FAILURE ||
+                run.getResult() == Result.ABORTED) {
             listener.error("Build unsuccessful. Skipping New Relic Deployment notification.");
-            return false;
+            return;
         }
 
         if (getNotifications() == null || getNotifications().isEmpty()) {
             listener.fatalError("Missing notifications!");
-            return false;
+            throw new AbortException("Missing notifications!");
         }
 
-        EnvVars envVars = build.getEnvironment(listener);
-        envVars.overrideAll(build.getBuildVariables());
+        EnvVars envVars = run.getEnvironment(listener);
 
         NewRelicClient client = getClient();
 
         for (DeploymentNotificationBean n : getNotifications()) {
-            UsernamePasswordCredentials credentials = DeploymentNotificationBean.getCredentials(build.getProject(), n.getApiKey(), client.getApiEndpoint());
+            UsernamePasswordCredentials credentials = DeploymentNotificationBean.getCredentials(
+                    run.getParent(), n.getApiKey(), client.getApiEndpoint()
+            );
             if (credentials == null) {
                 listener.error("Invalid credentials for Application ID: %s", n.getApplicationId());
                 result = false;
@@ -102,7 +101,9 @@ public class NewRelicDeploymentNotifier extends Notifier {
                 }
             }
         }
-        return result;
+        if (!result) {
+            throw new AbortException("Failed to notify New Relic");
+        }
     }
 
     // help testing
