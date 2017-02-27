@@ -145,7 +145,8 @@ public class DeploymentNotificationBean extends AbstractDescribableImpl<Deployme
             return FormValidation.ok();
         }
 
-        public ListBoxModel doFillApplicationIdItems(@AncestorInPath Job<?, ?> owner, @QueryParameter("apiKey") final String apiKey) throws IOException {
+        public ListBoxModel doFillApplicationIdItems(@AncestorInPath Job<?, ?> owner,
+                                                     @QueryParameter("apiKey") final String apiKey) throws IOException {
             if (owner == null || !owner.hasPermission(Item.CONFIGURE)) {
                 return new ListBoxModel();
             }
