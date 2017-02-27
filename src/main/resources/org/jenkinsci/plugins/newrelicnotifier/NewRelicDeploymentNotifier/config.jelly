@@ -27,7 +27,8 @@
 <j:jelly xmlns:j="jelly:core"
          xmlns:f="/lib/form">
     <f:entry>
-        <f:repeatableProperty field="notifications" minimum="1" header="${%Notification configuration}"
+        <f:repeatableProperty field="notifications" minimum="1"
+                              header="${%Notification configuration}"
                               add="${%Add another notification}"/>
     </f:entry>
 </j:jelly>
