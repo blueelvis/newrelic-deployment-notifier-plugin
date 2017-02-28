@@ -72,4 +72,11 @@ public interface NewRelicClient {
      * @return The endpoint URL for the New Relic API
      */
     String getApiEndpoint();
+
+    /**
+     * Set API Endpoint URL for the New Relic API.
+     *
+     * @param url The endpoint URL for the New Relic API
+     */
+    void setApiEndpoint(String url);
 }

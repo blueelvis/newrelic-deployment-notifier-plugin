@@ -42,6 +42,7 @@ import hudson.model.Job;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import hudson.util.Secret;
+import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.newrelicnotifier.api.Application;
 import org.jenkinsci.plugins.newrelicnotifier.api.NewRelicClient;
 import org.jenkinsci.plugins.newrelicnotifier.api.NewRelicClientImpl;
@@ -177,7 +178,7 @@ public class DeploymentNotificationBean extends AbstractDescribableImpl<Deployme
 
         // help testing
         public NewRelicClient getClient() {
-            return new NewRelicClientImpl();
+            return Jenkins.getInstance().getDescriptorByType(NewRelicDeploymentNotifier.DescriptorImpl.class).getClient();
         }
     }
 }

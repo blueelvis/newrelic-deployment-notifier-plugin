@@ -26,58 +26,51 @@ package org.jenkinsci.plugins.newrelicnotifier;
  * #L%
  */
 
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
-import hudson.model.Result;
 import org.jenkinsci.plugins.newrelicnotifier.api.NewRelicClientImpl;
+import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
+import org.jenkinsci.plugins.workflow.job.WorkflowJob;
+import org.jenkinsci.plugins.workflow.steps.StepConfigTester;
 import org.junit.Test;
 import org.junit.runners.model.Statement;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 
-public class NewRelicDeploymentNotifierTest extends AbstractTestBase{
+public class NewRelicDeploymentNotifierStepTest extends AbstractTestBase {
 
     @Test
-    public void missingNotifications() throws Exception {
+    public void configRoundTrip() throws Exception {
         story.addStep(new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                FreeStyleProject p = story.j.createFreeStyleProject();
-                List<DeploymentNotificationBean> notifications = new ArrayList<>();
+                NewRelicDeploymentNotifierStep step1 = new NewRelicDeploymentNotifierStep(credentialsId, "applicationId");
+                step1.setChangelog("changelog");
+                step1.setDescription("description");
+                step1.setRevision("revision");
+                step1.setUser("user");
 
-                NewRelicDeploymentNotifier notifier = new NewRelicDeploymentNotifier(notifications);
+                NewRelicDeploymentNotifierStep step2 = new StepConfigTester(story.j).configRoundTrip(step1);
+                story.j.assertEqualDataBoundBeans(step1, step2);
 
-                p.getPublishersList().add(notifier);
-                FreeStyleBuild build = p.scheduleBuild2(0).get();
-
-                story.j.assertBuildStatus(Result.FAILURE, build);
-                story.j.assertLogContains("FATAL: Missing notifications!", build);
+                verify(getRequestedFor(urlMatching(NewRelicClientImpl.APPLICATIONS_ENDPOINT))
+                        .withHeader("X-Api-Key", matching(password))
+                        .withHeader("Accept", matching("application/json"))
+                );
             }
         });
     }
 
     @Test
-    public void freestyleProjectNotifier() throws Exception {
+    public void testSendNotification() throws Exception {
         story.addStep(new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                FreeStyleProject p = story.j.createFreeStyleProject();
-
-                List<DeploymentNotificationBean> notifications = new ArrayList<>();
-                DeploymentNotificationBean notificationBean = new DeploymentNotificationBean(
-                        credentialsId, "applicationId", "description", "revision", "changelog", "user"
-                );
-                notifications.add(notificationBean);
-
-                NewRelicDeploymentNotifier notifier = new NewRelicDeploymentNotifier(notifications);
-
-                p.getPublishersList().add(notifier);
-                FreeStyleBuild b = p.scheduleBuild2(0).get();
-                story.j.assertBuildStatus(Result.SUCCESS, b);
+                WorkflowJob p = story.j.jenkins.createProject(WorkflowJob.class, "p");
+                p.setDefinition(new CpsFlowDefinition(
+                        "node() {\n" +
+                        "  notifyNewRelic apiKey: '"+credentialsId+"', applicationId: 'applicationId'\n" +
+                        "}", true
+                ));
+                story.j.assertBuildStatusSuccess(p.scheduleBuild2(0));
 
                 verify(postRequestedFor(urlMatching(NewRelicClientImpl.DEPLOYMENT_ENDPOINT))
                         .withHeader("X-Api-Key", matching(password))
@@ -86,4 +79,5 @@ public class NewRelicDeploymentNotifierTest extends AbstractTestBase{
             }
         });
     }
+
 }

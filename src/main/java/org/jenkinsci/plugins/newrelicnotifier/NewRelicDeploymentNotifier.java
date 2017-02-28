@@ -78,7 +78,7 @@ public class NewRelicDeploymentNotifier extends Notifier implements SimpleBuildS
 
         EnvVars envVars = run.getEnvironment(listener);
 
-        NewRelicClient client = getClient();
+        NewRelicClient client = getDescriptor().getClient();
 
         for (DeploymentNotificationBean n : getNotifications()) {
             UsernamePasswordCredentials credentials = DeploymentNotificationBean.getCredentials(
@@ -106,11 +106,6 @@ public class NewRelicDeploymentNotifier extends Notifier implements SimpleBuildS
         }
     }
 
-    // help testing
-    public NewRelicClient getClient() {
-        return new NewRelicClientImpl();
-    }
-
     @Override
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.NONE;
@@ -124,6 +119,8 @@ public class NewRelicDeploymentNotifier extends Notifier implements SimpleBuildS
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
+        private transient static NewRelicClient client = new NewRelicClientImpl();
+
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return true;
@@ -132,6 +129,10 @@ public class NewRelicDeploymentNotifier extends Notifier implements SimpleBuildS
         @Override
         public String getDisplayName() {
             return "New Relic Deployment Notifications";
+        }
+
+        public NewRelicClient getClient() {
+            return client;
         }
     }
 }
