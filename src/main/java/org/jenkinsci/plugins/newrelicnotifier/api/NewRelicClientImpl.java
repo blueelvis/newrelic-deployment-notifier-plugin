@@ -27,6 +27,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import hudson.ProxyConfiguration;
+import hudson.model.BuildListener;
 import jenkins.model.Jenkins;
 import org.apache.http.*;
 import org.apache.http.auth.AuthScope;
@@ -39,6 +40,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -116,7 +118,7 @@ public class NewRelicClientImpl implements NewRelicClient {
      */
     @Override
     public boolean sendNotification(String apiKey, String applicationId, String description, String revision,
-                                    String changelog, String user) throws IOException {
+                                    String changelog, String user, BuildListener listener) throws IOException {
         URI url = null;
         try {
             String appUrl = "/v2/applications/" + applicationId;
@@ -127,16 +129,23 @@ public class NewRelicClientImpl implements NewRelicClient {
         HttpPost request = new HttpPost(url);
         request.setHeader("X-Api-Key", apiKey);
         request.setHeader("Content-Type", "application/json");
+        
+        revision = "Hello World! Testing revision!!!";
 
         JsonObject deployment = new JsonObject();
-        deployment.addProperty("revision", revision);
-        deployment.addProperty("changelog", changelog);
-        deployment.addProperty("description", description);
-        deployment.addProperty("user", user);
+        JsonObject deploymentProperties = new JsonObject();
+        deploymentProperties.addProperty("revision", revision);
+        deploymentProperties.addProperty("changelog", changelog);
+        deploymentProperties.addProperty("description", description);
+        deploymentProperties.addProperty("user", user);
 
-        StringEntity entity = new StringEntity(deployment.toString());
+        deployment.add("deployment", deploymentProperties);
+        
+        String deploymentJsonString = deployment.toString();
+        deploymentJsonString = deploymentJsonString.replace("\\\\", "\\"); // This is because the new API supports Newlines and stringifying a JSON object escapes the newlines which make them useless in the Changelog section.
+
+        StringEntity entity = new StringEntity(deploymentJsonString,ContentType.APPLICATION_JSON);
         request.setEntity(entity);
-
         CloseableHttpClient client = getHttpClient(url);
         boolean result = false;
         try {

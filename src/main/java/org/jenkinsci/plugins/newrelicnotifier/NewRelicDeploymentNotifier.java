@@ -91,7 +91,7 @@ public class NewRelicDeploymentNotifier extends Notifier {
                                             n.getDescription(envVars),
                                             n.getRevision(envVars),
                                             n.getChangelog(envVars),
-                                            n.getUser(envVars))) {
+                                            n.getUser(envVars),listener)) {
                     listener.getLogger().println("Notified New Relic. Application ID: " + n.getApplicationId());
                 } else {
                     listener.error("Failed to notify New Relic. Application ID: %s", n.getApplicationId());

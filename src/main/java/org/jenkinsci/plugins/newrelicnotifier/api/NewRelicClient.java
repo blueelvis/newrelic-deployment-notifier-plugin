@@ -26,6 +26,8 @@ package org.jenkinsci.plugins.newrelicnotifier.api;
 import java.io.IOException;
 import java.util.List;
 
+import hudson.model.BuildListener;
+
 /**
  * REST client interface for the New Relic API.
  */
@@ -60,7 +62,8 @@ public interface NewRelicClient {
             String description,
             String revision,
             String changelog,
-            String user
+            String user,
+            BuildListener listener
     ) throws IOException;
 
     /**
