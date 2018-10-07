@@ -54,6 +54,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.*;
 import java.nio.charset.Charset;
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -117,8 +118,7 @@ public class NewRelicClientImpl implements NewRelicClient {
      * {@inheritDoc}
      */
     @Override
-    public boolean sendNotification(String apiKey, String applicationId, String description, String revision,
-                                    String changelog, String user, BuildListener listener) throws IOException {
+    public boolean sendNotification(String apiKey, String applicationId, String description, String revision, String changelog, String user, BuildListener listener) throws IOException {
         URI url = null;
         try {
             String appUrl = "/v2/applications/" + applicationId;
@@ -126,11 +126,21 @@ public class NewRelicClientImpl implements NewRelicClient {
         } catch (URISyntaxException e) {
             // no need to handle this
         }
+
+        // Check lengths of the parameters to ensure they don't exceed. More info over here - https://docs.newrelic.com/docs/apm/new-relic-apm/maintenance/record-deployments#deployment_limits
+        if (revision == null || revision.length() >= 127) {
+            throw new InvalidParameterException("The length of Revision should be less than 127 characters.");
+        } else if (changelog.length() >= 65535) {
+            throw new InvalidParameterException("The length of changelog should be less than 65535.");
+        } else if (description.length() >= 65535) {
+            throw new InvalidParameterException("The length of description should be less than 65535.");
+        } else if (user.length() >= 31) {
+            throw new InvalidParameterException("The length of user should be less than 31.");
+        }
+
         HttpPost request = new HttpPost(url);
         request.setHeader("X-Api-Key", apiKey);
         request.setHeader("Content-Type", "application/json");
-        
-        revision = "Hello World! Testing revision!!!";
 
         JsonObject deployment = new JsonObject();
         JsonObject deploymentProperties = new JsonObject();
@@ -141,9 +151,9 @@ public class NewRelicClientImpl implements NewRelicClient {
 
         deployment.add("deployment", deploymentProperties);
         
-        String deploymentJsonString = deployment.toString();
-        deploymentJsonString = deploymentJsonString.replace("\\\\", "\\"); // This is because the new API supports Newlines and stringifying a JSON object escapes the newlines which make them useless in the Changelog section.
-
+        String deploymentJsonString = deployment.toString().replace("\\\\", "");
+        //deploymentJsonString = deploymentJsonString.replace("\\\\", "\\"); // This is because the new API supports Newlines and stringifying a JSON object escapes the newlines which make them useless in the Changelog section.
+        listener.getLogger().println(deploymentJsonString);
         StringEntity entity = new StringEntity(deploymentJsonString,ContentType.APPLICATION_JSON);
         request.setEntity(entity);
         CloseableHttpClient client = getHttpClient(url);
