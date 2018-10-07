@@ -69,7 +69,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jenkins.version>1.609.1</jenkins.version>
-        <java.level>8</java.level>
+        <java.level>7</java.level>
         <jenkins-test-harness.version>2.13</jenkins-test-harness.version>
     </properties>
 
