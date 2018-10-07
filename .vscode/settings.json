@@ -1,0 +1,6 @@
+{
+    "java.configuration.updateBuildConfiguration": "interactive",
+    
+    // Change this to where your Maven is installed.
+    "java.configuration.maven.userSettings": "C:/maven/conf/settings.xml"
+}
