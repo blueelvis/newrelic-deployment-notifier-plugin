@@ -28,6 +28,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import hudson.ProxyConfiguration;
 import hudson.model.BuildListener;
+import hudson.FilePath;
 import jenkins.model.Jenkins;
 import org.apache.http.*;
 import org.apache.http.auth.AuthScope;
@@ -54,6 +55,9 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
@@ -115,10 +119,25 @@ public class NewRelicClientImpl implements NewRelicClient {
     }
 
     /**
+     * This function is used to read the contents of the Changelog File if specified. If the path is valid and the file is readable, it will return the contents of the file and in case it fails, it will return NULL.
+     * @param workspacePath The path of the Workspace where the Jenkins Job is running.
+     * @param filePath The path of the changelog file which needs to be read.
+     * @return Returns the contents of a file as string or NULL if unable to read the file.
+     */
+    private String getChangelogFileContents(String workspacePath, String filePath) {
+        try {
+            String data =  new String(Files.readAllBytes(Paths.get(workspacePath,filePath).toAbsolutePath()),StandardCharsets.UTF_8);
+            return data;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
-    public boolean sendNotification(String apiKey, String applicationId, String description, String revision, String changelog, String user, BuildListener listener) throws IOException {
+    public boolean sendNotification(String apiKey, String applicationId, String description, String revision, String changelog, String user, BuildListener listener, FilePath workspacePath) throws IOException {
         URI url = null;
         try {
             String appUrl = "/v2/applications/" + applicationId;
@@ -126,11 +145,19 @@ public class NewRelicClientImpl implements NewRelicClient {
         } catch (URISyntaxException e) {
             // no need to handle this
         }
+        String changeLogContent = "";
+        String changeLogFileContent = getChangelogFileContents(workspacePath.toString(), changelog);
+
+        if (changeLogFileContent != null) {
+            changeLogContent = changeLogFileContent;
+        } else {
+            changeLogContent = changelog;
+        }
 
         // Check lengths of the parameters to ensure they don't exceed. More info over here - https://docs.newrelic.com/docs/apm/new-relic-apm/maintenance/record-deployments#deployment_limits
         if (revision == null || revision.length() >= 127) {
             throw new InvalidParameterException("The length of Revision should be less than 127 characters.");
-        } else if (changelog.length() >= 65535) {
+        } else if (changeLogContent.length() >= 65535) {
             throw new InvalidParameterException("The length of changelog should be less than 65535.");
         } else if (description.length() >= 65535) {
             throw new InvalidParameterException("The length of description should be less than 65535.");
@@ -145,7 +172,7 @@ public class NewRelicClientImpl implements NewRelicClient {
         JsonObject deployment = new JsonObject();
         JsonObject deploymentProperties = new JsonObject();
         deploymentProperties.addProperty("revision", revision);
-        deploymentProperties.addProperty("changelog", changelog);
+        deploymentProperties.addProperty("changelog", changeLogContent);
         deploymentProperties.addProperty("description", description);
         deploymentProperties.addProperty("user", user);
 

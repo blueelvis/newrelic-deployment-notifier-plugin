@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.List;
 
 import hudson.model.BuildListener;
+import hudson.FilePath;
 
 /**
  * REST client interface for the New Relic API.
@@ -52,6 +53,8 @@ public interface NewRelicClient {
      * @param revision The revision number from your source control system
      * @param changelog A list of changes for this deployment
      * @param user The name of the user/process that triggered this deployment
+     * @param listener The Listener object provided by Jenkins. Used for logging
+     * @param workspacePath The path of the working directory where the Jenkins Job is running.
      * @return Returns true if notifications was successful
      * @throws IOException
      * @see <a href="https://docs.newrelic.com/docs/apm/apis/requirements/api-key">https://docs.newrelic.com/docs/apm/apis/requirements/api-key</a>
@@ -63,7 +66,8 @@ public interface NewRelicClient {
             String revision,
             String changelog,
             String user,
-            BuildListener listener
+            BuildListener listener,
+            FilePath workspacePath
     ) throws IOException;
 
     /**

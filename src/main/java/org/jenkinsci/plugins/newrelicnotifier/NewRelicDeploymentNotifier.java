@@ -26,6 +26,7 @@ package org.jenkinsci.plugins.newrelicnotifier;
 import com.cloudbees.plugins.credentials.common.UsernamePasswordCredentials;
 import hudson.EnvVars;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -80,6 +81,9 @@ public class NewRelicDeploymentNotifier extends Notifier {
 
         NewRelicClient client = getClient();
 
+        //Get Current Workspace Path
+        FilePath workspacePath = build.getWorkspace();
+
         for (DeploymentNotificationBean n : getNotifications()) {
             UsernamePasswordCredentials credentials = DeploymentNotificationBean.getCredentials(build.getProject(), n.getApiKey(), client.getApiEndpoint());
             if (credentials == null) {
@@ -91,7 +95,9 @@ public class NewRelicDeploymentNotifier extends Notifier {
                                             n.getDescription(envVars),
                                             n.getRevision(envVars),
                                             n.getChangelog(envVars),
-                                            n.getUser(envVars),listener)) {
+                                            n.getUser(envVars),
+                                            listener,
+                                            workspacePath)) {
                     listener.getLogger().println("Notified New Relic. Application ID: " + n.getApplicationId());
                 } else {
                     listener.error("Failed to notify New Relic. Application ID: %s", n.getApplicationId());
